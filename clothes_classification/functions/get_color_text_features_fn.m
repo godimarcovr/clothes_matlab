@@ -1,4 +1,4 @@
-function ctfeat_vect = get_color_text_features_fn( img_name,mode, dim_img, patch_rows, patch_cols, patch_stride,uniforme_ent_tresh,texthresh,num_colors,num_patches, color_mode )
+function ctfeat_vect = get_color_text_features_fn( img_name, dim_img, patch_rows, patch_cols, patch_stride,uniforme_ent_tresh,texthresh,num_colors,num_patches, color_mode )
 %UNTITLED9 Summary of this function goes here
 %   Detailed explanation goes here
     
@@ -37,7 +37,7 @@ function ctfeat_vect = get_color_text_features_fn( img_name,mode, dim_img, patch
 %     fprintf('Patch trovate: %i \n', size(patches,2));
     if size(patches,2) == 0
         ctfeat_vect(:) = get_emergency_patches_fn( img, num_patches, num_colors, patch_rows, patch_cols, color_mode );
-    elseif strcmp(mode,'randomsample')
+    else
         ctfeatures = [];
         count = 0;
         while count<num_patches && size(patches,2)>0
@@ -66,10 +66,6 @@ function ctfeat_vect = get_color_text_features_fn( img_name,mode, dim_img, patch
                 ctfeatures = [];
             end 
         end
-        
-    else
-        fprintf('modalità errata!\n')
-        return
     end
     
     %seleziono qua le patch che tengo

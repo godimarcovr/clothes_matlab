@@ -24,6 +24,8 @@ for modeind=1:length(modes)
         num_patches = mode{2};
         num_colors = mode{3};
         color_mode = mode{4};
+        version = mode{5};
+        
         if strcmp(color_mode,'460')
             color_dim = 1;
         elseif strcmp(color_mode,'rgb')
@@ -31,7 +33,7 @@ for modeind=1:length(modes)
         elseif strcmp(color_mode,'cielab')
             color_dim = 3;
         end
-        savefilename = strcat('color_text_cache_',num2str(num_colors),'_',num2str(num_patches),'_',color_mode,'.mat');
+        savefilename = strcat('color_text_cache_',num2str(num_colors),'_',num2str(num_patches),'_',color_mode,'_',version,'.mat');
         if exist(savefilename,'file')
             load(savefilename);
 %             ct_feat_vector = ct_feat_vector(:,1:5);
@@ -43,8 +45,14 @@ for modeind=1:length(modes)
                     fprintf('Immagine numero %i\n',i);
                 end
                 img_name = dataset_info{i}.filename;
-                color_texture_feat_vector = get_color_text_features_fn(img_name ,'randomsample', dim_img, patch_rows, patch_cols, patch_stride,...
+                %magari metterli in una sola funzione?
+                if strcmp(version,'randomsample')
+                    color_texture_feat_vector = get_color_text_features_fn(img_name, dim_img, patch_rows, patch_cols, patch_stride,...
                                                     uniforme_ent_tresh,texthresh,num_colors,num_patches, color_mode );
+                elseif strcmp(version,'simple')
+                    color_texture_feat_vector = get_color_text_features_simple_fn( img_name, dim_img, patch_rows, patch_cols...
+                                                        ,uniforme_ent_tresh,texthresh,num_colors,num_patches, color_mode );
+                end
 %                 if (num_colors+28)*num_patches ~= size(color_texture_feat_vector,2)
 %                     size(color_texture_feat_vector,2)
 %                 end
@@ -85,7 +93,7 @@ for modeind=1:length(modes)
             load(savefilename);
         else
             gc_feat_vector = zeros(size(dataset_info,1),3*num_colors);
-            for i=1:size(dataset_info,1)
+            parfor i=1:size(dataset_info,1)
                 if mod(i,100)==0
                     fprintf('Immagine numero %i\n',i);
                 end

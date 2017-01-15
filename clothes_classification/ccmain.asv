@@ -264,7 +264,8 @@ cd(test_dataset_name)
 % csvwrite(strcat(test_dataset_name,'__features.csv'),test_to_test_vectors);
 % csvwrite(strcat(test_dataset_name,'__categories.csv'),test_to_test_categories);
 
-save(strcat(test_dataset_name,'__features.mat'),'test_to_test_vectors','test_to_test_categories');
+save(strcat(test_dataset_name,'__features.mat'),'test_to_test_vectors');
+save(strcat(test_dataset_name,'__categories.mat'),'test_to_test_categories');
 
 cd ..
 cd ..
@@ -289,9 +290,10 @@ train_feat_vectors2 = train_feat_vectors;
 % csvwrite(strcat(train_dataset_name,'__categories.csv'),[train_categories; test_to_train_categories]);
 
 
-train_vectors = [train_feat_vectors; test_to_train_vectors];
-train_categories = [train_categories; test_to_train_categories];
-save(strcat(train_dataset_name,'__features.mat'),'train_vectors','train_categories');
+train_feat_vectors = [train_feat_vectors; test_to_train_vectors];
+train_feat_vectors = [train_categories; test_to_train_categories];
+save(strcat(train_dataset_name,'__features.mat'),'tmp_feat_vectors');
+save(strcat(train_dataset_name,'__categories.mat'),'tmp_feat_categories');
 
 train_feat_vectors = train_feat_vectors2;
 

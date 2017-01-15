@@ -6,10 +6,12 @@ from keras.layers import Activation, Dense, Dropout
 from keras.utils import np_utils
 import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix
+import scipy.io
 
 
 TRAIN_DATASET_NAME = "balanced_specific_train"
 TEST_DATASET_NAME = "balanced_specific_test"
+# NN_CONF_FILENAME = "balanced_specific_train_NN_config.mat"
 
 def main():
     '''
@@ -19,35 +21,44 @@ def main():
     #leggo dati di input
     os.chdir("data")
 
-    train_features = []
-    with open(TRAIN_DATASET_NAME + "__features.csv", 'r') as csvfile:
-        csvdata = csv.reader(csvfile, delimiter=',')
-        for row in csvdata:
-            train_features.append([float(x) for x in row])
+    train_mat = scipy.io.loadmat(TRAIN_DATASET_NAME + "__features.mat")
+    train_features = train_mat['train_vectors'].astype('float32')
+    train_cats = train_mat['train_categories'].astype(int)
+    feat_size = train_features.shape[1]
 
-    feat_size = len(train_features[0])
-    train_features = np.array(train_features, ndmin=2)
+    test_mat = scipy.io.loadmat(TEST_DATASET_NAME + "__features.mat")
+    test_features = test_mat['test_to_test_vectors'].astype('float32')
+    test_cats = test_mat['test_to_test_categories'].astype(int)
 
-    test_features = []
-    with open(TEST_DATASET_NAME + "__features.csv", 'r') as csvfile:
-        csvdata = csv.reader(csvfile, delimiter=',')
-        for row in csvdata:
-            test_features.append([float(x) for x in row])
-    test_features = np.array(test_features, ndmin=2)
+    # train_features = []
+    # with open(TRAIN_DATASET_NAME + "__features.csv", 'r') as csvfile:
+    #     csvdata = csv.reader(csvfile, delimiter=',')
+    #     for row in csvdata:
+    #         train_features.append([float(x) for x in row])
 
-    train_cats = []
-    with open(TRAIN_DATASET_NAME + "__categories.csv", 'r') as csvfile:
-        csvdata = csv.reader(csvfile, delimiter=',')
-        for row in csvdata:
-            train_cats.append(int(row[0]))
-    train_cats = np.array(train_cats, ndmin=1)
+    # feat_size = len(train_features[0])
+    # train_features = np.array(train_features, ndmin=2)
 
-    test_cats = []
-    with open(TEST_DATASET_NAME + "__categories.csv", 'r') as csvfile:
-        csvdata = csv.reader(csvfile, delimiter=',')
-        for row in csvdata:
-            test_cats.append(int(row[0]))
-    test_cats = np.array(test_cats, ndmin=1)
+    # test_features = []
+    # with open(TEST_DATASET_NAME + "__features.csv", 'r') as csvfile:
+    #     csvdata = csv.reader(csvfile, delimiter=',')
+    #     for row in csvdata:
+    #         test_features.append([float(x) for x in row])
+    # test_features = np.array(test_features, ndmin=2)
+
+    # train_cats = []
+    # with open(TRAIN_DATASET_NAME + "__categories.csv", 'r') as csvfile:
+    #     csvdata = csv.reader(csvfile, delimiter=',')
+    #     for row in csvdata:
+    #         train_cats.append(int(row[0]))
+    # train_cats = np.array(train_cats, ndmin=1)
+
+    # test_cats = []
+    # with open(TEST_DATASET_NAME + "__categories.csv", 'r') as csvfile:
+    #     csvdata = csv.reader(csvfile, delimiter=',')
+    #     for row in csvdata:
+    #         test_cats.append(int(row[0]))
+    # test_cats = np.array(test_cats, ndmin=1)
 
     os.chdir("..")
 
@@ -61,18 +72,22 @@ def main():
     test_cats_categ = np_utils.to_categorical(test_cats, num_classes)
 
     model = Sequential()
-    model.add(Dense(75, input_dim=feat_size))
-    model.add(Activation('relu'))
-    model.add(Dropout(0.5))
-    model.add(Dense(32))
-    model.add(Activation('relu'))
+    model.add(Dropout(0.25, input_shape=(feat_size,)))
+    model.add(Dense(200))
+    model.add(Activation('sigmoid'))
+
+    model.add(Dropout(0.25))
+    model.add(Dense(100))
+    model.add(Activation('sigmoid'))
+
     model.add(Dropout(0.25))
     model.add(Dense(num_classes))
     model.add(Activation('softmax'))
+
     model.compile(loss='categorical_crossentropy',
                   optimizer='rmsprop',
                   metrics=['accuracy'])
-    history = model.fit(train_features, train_cats_categ, nb_epoch=100
+    history = model.fit(train_features, train_cats_categ, nb_epoch=200
                         , validation_data=(test_features, test_cats_categ)
                         , verbose=2)
     #matrice di confusione

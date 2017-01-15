@@ -1,4 +1,4 @@
-function [ aug_features, aug_categories, nninfo ] = data_augment_fn( features, categories, featlist )
+function [ aug_features, aug_categories ] = data_augment_fn( features, categories, featlist )
 %UNTITLED4 Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -7,13 +7,15 @@ aug_categories = categories;
 
 cursor = 1;
 
-nninfo = {};
+fc_or_conv_vect = [];
 
 for modeind=1:length(featlist)
     modalita = featlist{modeind};
     if strcmp(modalita{1},'shapeprops')
         microdim = modalita{2};
         cursor = cursor + 3;
+        fc_or_conv_vect = [fc_or_conv_vect 0 0 0];
+        
         new_masks = zeros( size(aug_features,1), microdim(1) * microdim(2));
         for i=1:size(aug_features,1)
             mask = aug_features(i, cursor:cursor + microdim(1) * microdim(2) - 1);
@@ -25,12 +27,8 @@ for modeind=1:length(featlist)
         new_features(:, cursor:cursor + microdim(1) * microdim(2) - 1) = new_masks;
         aug_features = [aug_features; new_features];
         aug_categories = [aug_categories; aug_categories];
-        
-        nninfo = {nninfo {}};
-        nninfo{end}.size = microdim;
-        nninfo{end}.range_start = cursor;
-        nninfo{end}.range_end = cursor + microdim(1) * microdim(2) - 1;
         cursor = cursor + microdim(1) * microdim(2);
+        fc_or_conv_vect = [fc_or_conv_vect ones(1,microdim(1) * microdim(2))];
     elseif strcmp(modalita{1},'global_color')
         num_colors = modalita{2};
         colorspace = modalita{3};

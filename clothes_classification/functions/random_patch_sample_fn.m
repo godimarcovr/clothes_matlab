@@ -54,7 +54,9 @@ if succ_count < num_patches
         remaining = num_patches - succ_count;
         patches(succ_count + 1:num_patches) = patches(randsample(succ_count, remaining, true));
     else
-        patches(:) = img(bestpatch.r:bestpatch.r + prows - 1, bestpatch.c:bestpatch.c + pcols -1, :);
+        for i=1:num_patches
+            patches{i}.img = img(bestpatch.r:bestpatch.r + prows - 1, bestpatch.c:bestpatch.c + pcols -1, :);
+        end
     end
     
 end
