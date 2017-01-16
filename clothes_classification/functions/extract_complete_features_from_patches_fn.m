@@ -78,7 +78,7 @@ for i=1:totpatches
         coppie_descrittori(i,:) = [topcolors J tmp tamura_desc];
     end
 end
-coppie_descrittori(all(coppie_descrittori==0,2),:)=[];
+% coppie_descrittori(all(coppie_descrittori==0,2),:)=[];
 
 end
 

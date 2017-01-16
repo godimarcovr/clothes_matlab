@@ -22,11 +22,9 @@ img = imresize(imread(img_name),dim_img);
 ctfeat_vect = [];
 
 patches = random_patch_sample_fn( img, patch_rows, patch_cols, num_patches );
+tmp = extract_complete_features_from_patches_fn( patches, patch_rows, patch_cols,uniforme_ent_tresh,texthresh,num_colors,1, color_mode);
 
-for i=1:length(patches)
-    ctfeat_vect = [ctfeat_vect extract_complete_features_from_patches_fn( patches(i), patch_rows...
-                                                        , patch_cols,uniforme_ent_tresh,texthresh,num_colors,1, color_mode)];
-end
+ctfeat_vect = [ctfeat_vect tmp(:)];
 
 
 end

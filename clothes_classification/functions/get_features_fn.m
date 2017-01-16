@@ -25,6 +25,8 @@ for modeind=1:length(modes)
         num_colors = mode{3};
         color_mode = mode{4};
         version = mode{5};
+        color_text_grid_rows = mode{6};
+        color_text_grid_cols = mode{7};
         
         if strcmp(color_mode,'460')
             color_dim = 1;

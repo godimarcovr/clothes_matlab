@@ -32,10 +32,12 @@ color_text_num_colors = 3;
 color_text_num_patches = 4;
 color_text_num_colorspace = 'rgb';
 color_text_num_version = 'simple'; %simple o randomsample
+color_text_grid_rows = 1;
+color_text_grid_cols = 1;
 
 featlist = {{'shapeprops', shapeprops_microdim}...
-    ,{'global_color', global_color_num_colors, global_color_num_colorspace}};%...
-    %,{'color_text', color_text_num_patches, color_text_num_colors, color_text_num_colorspace,color_text_num_version}};
+    ,{'global_color', global_color_num_colors, global_color_num_colorspace}...
+    ,{'color_text', color_text_num_patches, color_text_num_colors, color_text_num_colorspace,color_text_num_version,color_text_grid_rows,color_text_grid_cols}};
 
 %macrocategorie
 macro_categories_list = {'Borse';'Top';'Cappelli';'Cinture';'Foulard & Sciarpe';'Gonne';'Intimo';'Pantaloni';'Vestiti'};
@@ -260,11 +262,23 @@ test_to_test_categories = test_categories(test_to_train_num+1:end,:);
 cd datasets
 cd(test_dataset_name)
 
-[test_to_test_vectors, test_to_test_categories, ~] = data_augment_fn( test_to_test_vectors, test_to_test_categories, featlist );
+[test_to_test_vectors, test_to_test_categories, nninfo] = data_augment_fn( test_to_test_vectors, test_to_test_categories, featlist );
 % csvwrite(strcat(test_dataset_name,'__features.csv'),test_to_test_vectors);
 % csvwrite(strcat(test_dataset_name,'__categories.csv'),test_to_test_categories);
 
-save(strcat(test_dataset_name,'__features.mat'),'test_to_test_vectors','test_to_test_categories');
+conv_test_vectors = [];
+
+for i=1:length(nninfo)
+    %attenzione se ne metto più d'uno convoluto, considerare come cambiano
+    %gli indici se rimuovo.
+    if ~isempty(nninfo{i})
+        conv_test_vectors = test_to_test_vectors(:,nninfo{i}.range_start:nninfo{i}.range_end);
+        conv_test_vectors = reshape(conv_test_vectors,[],nninfo{i}.size(1),nninfo{i}.size(2));
+        test_to_test_vectors = [test_to_test_vectors(:,1:nninfo{i}.range_start-1) test_to_test_vectors(:,nninfo{i}.range_end + 1:end)];
+    end
+end
+
+save(strcat(test_dataset_name,'__features.mat'),'test_to_test_vectors','test_to_test_categories','conv_test_vectors');
 
 cd ..
 cd ..
@@ -281,7 +295,7 @@ end
 
 train_feat_vectors2 = train_feat_vectors;
 [test_to_train_vectors, test_to_train_categories, ~] = data_augment_fn( test_to_train_vectors, test_to_train_categories, featlist );
-[train_feat_vectors, train_categories, nninfo] = data_augment_fn( train_feat_vectors, train_categories, featlist );
+[train_feat_vectors, train_categories, ~] = data_augment_fn( train_feat_vectors, train_categories, featlist );
 
 %save(strcat(train_dataset_name,'_NN_config.mat'),'nninfo');
 
@@ -291,7 +305,20 @@ train_feat_vectors2 = train_feat_vectors;
 
 train_vectors = [train_feat_vectors; test_to_train_vectors];
 train_categories = [train_categories; test_to_train_categories];
-save(strcat(train_dataset_name,'__features.mat'),'train_vectors','train_categories');
+
+conv_train_vectors = [];
+
+for i=1:length(nninfo)
+    %attenzione se ne metto più d'uno convoluto, considerare come cambiano
+    %gli indici se rimuovo.
+    if ~isempty(nninfo{i})
+        conv_train_vectors = train_vectors(:,nninfo{i}.range_start:nninfo{i}.range_end);
+        conv_train_vectors = reshape(conv_train_vectors,[],nninfo{i}.size(1),nninfo{i}.size(2));
+        train_vectors = [train_vectors(:,1:nninfo{i}.range_start-1) train_vectors(:,nninfo{i}.range_end + 1:end)];
+    end
+end
+
+save(strcat(train_dataset_name,'__features.mat'),'train_vectors','train_categories','conv_train_vectors','categories_list');
 
 train_feat_vectors = train_feat_vectors2;
 
