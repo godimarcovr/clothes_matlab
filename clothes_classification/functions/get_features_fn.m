@@ -25,8 +25,17 @@ for modeind=1:length(modes)
         num_colors = mode{3};
         color_mode = mode{4};
         version = mode{5};
-        color_text_grid_rows = mode{6};
-        color_text_grid_cols = mode{7};
+        color_text_grid_dim = mode{6};
+        color_text_grid_rows = color_text_grid_dim(1);
+        color_text_grid_cols = color_text_grid_dim(2);
+        if length(mode) > 5
+            if  strcmp(version,'randomsample')
+                fprintf('Attenzione, randomsample non supporta la divisione in griglia, potrebbero esserci errori, usa simple \n')
+            end
+        else 
+            color_text_grid_rows = 1;
+            color_text_grid_cols = 1;
+        end
         
         if strcmp(color_mode,'460')
             color_dim = 1;
@@ -35,13 +44,14 @@ for modeind=1:length(modes)
         elseif strcmp(color_mode,'cielab')
             color_dim = 3;
         end
-        savefilename = strcat('color_text_cache_',num2str(num_colors),'_',num2str(num_patches),'_',color_mode,'_',version,'.mat');
+        savefilename = strcat('color_text_cache_',num2str(num_colors),'_',num2str(num_patches),'_'...
+                              ,color_mode,'_',version,'_',num2str([color_text_grid_rows color_text_grid_cols]),'.mat');
         if exist(savefilename,'file')
             load(savefilename);
 %             ct_feat_vector = ct_feat_vector(:,1:5);
         else
             
-            ct_feat_vector = zeros(size(dataset_info,1),(color_dim*num_colors+28)*num_patches);
+            ct_feat_vector = zeros(size(dataset_info,1),(color_dim*num_colors+28)*num_patches*color_text_grid_rows*color_text_grid_cols);
             parfor i=1:size(dataset_info,1)
                 if mod(i,100)==0
                     fprintf('Immagine numero %i\n',i);
@@ -53,7 +63,8 @@ for modeind=1:length(modes)
                                                     uniforme_ent_tresh,texthresh,num_colors,num_patches, color_mode );
                 elseif strcmp(version,'simple')
                     color_texture_feat_vector = get_color_text_features_simple_fn( img_name, dim_img, patch_rows, patch_cols...
-                                                        ,uniforme_ent_tresh,texthresh,num_colors,num_patches, color_mode );
+                                                        ,uniforme_ent_tresh,texthresh,num_colors,num_patches, color_mode...
+                                                        , color_text_grid_rows, color_text_grid_cols);
                 end
 %                 if (num_colors+28)*num_patches ~= size(color_texture_feat_vector,2)
 %                     size(color_texture_feat_vector,2)

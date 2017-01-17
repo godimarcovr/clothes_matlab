@@ -40,6 +40,10 @@ for modeind=1:length(featlist)
         num_patches = modalita{2};
         num_colors = modalita{3};
         color_mode = modalita{4};
+        version = mode{5};
+        color_text_grid_dim = mode{6};
+        color_text_grid_rows = color_text_grid_dim(1);
+        color_text_grid_cols = color_text_grid_dim(2);
         if strcmp(color_mode,'460')
             color_dim = 1;
         elseif strcmp(color_mode,'rgb')
@@ -48,20 +52,27 @@ for modeind=1:length(featlist)
             color_dim = 3;
         end
         
-        single_patch_dim = (color_dim*num_colors+28);
-        num_permutations = factorial(num_patches);
-        permutations = perms(1:num_patches);
-        new_patches = zeros(size(aug_features,1) * num_permutations, single_patch_dim * num_patches);
-        for i=1:num_permutations
-            for j=permutations(i,:)
-                new_patches(((i-1)*size(aug_features,1))+1:(i*size(aug_features,1)),((j-1)*single_patch_dim)+1:j*single_patch_dim) = ...
-                                aug_features(:,cursor+(j-1)*single_patch_dim:cursor-1+j*single_patch_dim);
-            end
-        end
-        new_features = repmat(aug_features,num_permutations,1);
-        new_features(:, cursor:cursor+(num_patches*single_patch_dim)-1) = new_patches;
-        aug_features = new_features;
-        aug_categories = repmat(aug_categories, num_permutations,1);
+%         single_patch_dim = (color_dim*num_colors+28);
+%         % per una singola area: base in cui esprimo la permutazione
+%         num_permutations = factorial(num_patches);
+%         %numero cifre del numero nella nuova base
+%         num_areas = color_text_grid_rows * color_text_grid_cols;
+%         
+%         permut_number = 0;
+%         
+%         
+%         permutations = perms(1:num_patches);
+%         new_patches = zeros(size(aug_features,1) * num_permutations, single_patch_dim * num_patches);
+%         for i=1:num_permutations
+%             for j=permutations(i,:)
+%                 new_patches(((i-1)*size(aug_features,1))+1:(i*size(aug_features,1)),((j-1)*single_patch_dim)+1:j*single_patch_dim) = ...
+%                                 aug_features(:,cursor+(j-1)*single_patch_dim:cursor-1+j*single_patch_dim);
+%             end
+%         end
+%         new_features = repmat(aug_features,num_permutations,1);
+%         new_features(:, cursor:cursor+(num_patches*single_patch_dim)-1) = new_patches;
+%         aug_features = new_features;
+%         aug_categories = repmat(aug_categories, num_permutations,1);
         cursor = cursor + (num_patches*single_patch_dim);
     end
 end

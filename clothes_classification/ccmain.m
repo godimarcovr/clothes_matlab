@@ -29,15 +29,15 @@ global_color_num_colors = 3;
 global_color_num_colorspace = 'rgb';
 
 color_text_num_colors = 3;
-color_text_num_patches = 4;
+color_text_num_patches = 2;
 color_text_num_colorspace = 'rgb';
 color_text_num_version = 'simple'; %simple o randomsample
-color_text_grid_rows = 1;
-color_text_grid_cols = 1;
+color_text_grid_rows = 3;
+color_text_grid_cols = 3;
 
 featlist = {{'shapeprops', shapeprops_microdim}...
     ,{'global_color', global_color_num_colors, global_color_num_colorspace}...
-    ,{'color_text', color_text_num_patches, color_text_num_colors, color_text_num_colorspace,color_text_num_version,color_text_grid_rows,color_text_grid_cols}};
+    ,{'color_text', color_text_num_patches, color_text_num_colors, color_text_num_colorspace,color_text_num_version,[color_text_grid_rows,color_text_grid_cols]}};
 
 %macrocategorie
 macro_categories_list = {'Borse';'Top';'Cappelli';'Cinture';'Foulard & Sciarpe';'Gonne';'Intimo';'Pantaloni';'Vestiti'};

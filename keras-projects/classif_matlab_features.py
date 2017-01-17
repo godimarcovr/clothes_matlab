@@ -57,18 +57,18 @@ def main():
 
     # convoluto
     model_conv = Sequential()
-    model_conv.add(Convolution2D(16, 3, 3, input_shape=(conv_feat_size[0], conv_feat_size[1], 1)))
+    model_conv.add(Convolution2D(12, 3, 3, input_shape=(conv_feat_size[0], conv_feat_size[1], 1)))
     model_conv.add(Activation('relu'))
     model_conv.add(Flatten())
 
-    # model_conv.add(Dropout(0.5))
-    # model_conv.add(Dense(50))
-    # model_conv.add(Activation('sigmoid'))
+    model_conv.add(Dropout(0.5))
+    model_conv.add(Dense(20))
+    model_conv.add(Activation('sigmoid'))
 
     #fully connected
     model = Sequential()
     model.add(Dropout(0.5, input_shape=(feat_size,)))
-    model.add(Dense(75))
+    model.add(Dense(100))
     model.add(Activation('sigmoid'))
 
     #merging
@@ -76,7 +76,7 @@ def main():
     merged_model.add(Merge([model_conv, model], mode='concat', concat_axis=1))
 
     merged_model.add(Dropout(0.45))
-    merged_model.add(Dense(75))
+    merged_model.add(Dense(45))
     merged_model.add(Activation('sigmoid'))
 
     merged_model.add(Dropout(0.25))
@@ -84,7 +84,7 @@ def main():
     merged_model.add(Activation('softmax'))
 
     merged_model.compile(loss='categorical_crossentropy',
-                         optimizer='adadelta',
+                         optimizer='adam',
                          metrics=['accuracy'])
     history = merged_model.fit([conv_train_features, train_features], train_cats_categ, nb_epoch=50
                                , validation_data=([conv_test_features, test_features]
