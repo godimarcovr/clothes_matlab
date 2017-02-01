@@ -2,15 +2,16 @@ import csv
 import os
 import numpy as np
 from keras.models import Sequential
-from keras.layers import Activation, Dense, Dropout, Convolution2D, Flatten, Merge
+from keras.layers import Activation, Dense, Dropout, Convolution2D, Flatten, Merge, MaxPooling2D
 from keras.utils import np_utils
+from keras.regularizers import l2
 import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix
 import scipy.io
 
 
-TRAIN_DATASET_NAME = "balanced_specific_train"
-TEST_DATASET_NAME = "balanced_specific_test"
+TRAIN_DATASET_NAME = "forNN02_big_train"
+TEST_DATASET_NAME = "forNN02_big_test"
 
 def main():
     '''
@@ -57,26 +58,34 @@ def main():
 
     # convoluto
     model_conv = Sequential()
-    model_conv.add(Convolution2D(12, 3, 3, input_shape=(conv_feat_size[0], conv_feat_size[1], 1)))
+    model_conv.add(Convolution2D(16, 3, 3, input_shape=(conv_feat_size[0], conv_feat_size[1], 1)))
+    model_conv.add(Activation('relu'))
+    model_conv.add(MaxPooling2D(pool_size=(2, 2)))
+
+    model_conv.add(Convolution2D(16, 3, 3))
     model_conv.add(Activation('relu'))
     model_conv.add(Flatten())
 
     model_conv.add(Dropout(0.5))
-    model_conv.add(Dense(20))
+    model_conv.add(Dense(100))
     model_conv.add(Activation('sigmoid'))
 
     #fully connected
     model = Sequential()
     model.add(Dropout(0.5, input_shape=(feat_size,)))
-    model.add(Dense(100))
+    model.add(Dense(400))
     model.add(Activation('sigmoid'))
 
     #merging
     merged_model = Sequential()
     merged_model.add(Merge([model_conv, model], mode='concat', concat_axis=1))
 
-    merged_model.add(Dropout(0.45))
-    merged_model.add(Dense(45))
+    merged_model.add(Dropout(0.4))
+    merged_model.add(Dense(300))
+    merged_model.add(Activation('sigmoid'))
+
+    merged_model.add(Dropout(0.4))
+    merged_model.add(Dense(50))
     merged_model.add(Activation('sigmoid'))
 
     merged_model.add(Dropout(0.25))
@@ -91,7 +100,7 @@ def main():
                                                   , test_cats_categ)
                                , verbose=2)
     #matrice di confusione
-    y_pred = merged_model.predict_classes([conv_test_features, test_features])
+    y_pred = merged_model.predict_classes([conv_test_features, test_features], verbose=0)
     conf = confusion_matrix(test_cats, y_pred)
     plt.figure()
     plt.imshow(conf, interpolation='nearest', cmap=plt.cm.Blues)

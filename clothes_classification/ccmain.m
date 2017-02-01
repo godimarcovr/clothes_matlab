@@ -1,7 +1,7 @@
 clear all
 
-test_dataset_name = 'balanced_specific_test';
-train_dataset_name = 'balanced_specific_train';
+test_dataset_name = 'forNN02_big_test';
+train_dataset_name = 'forNN02_big_train';
 
 %più grande è più preciso è il risultato, ma aumenta la memoria necessaria
 img_resize_factor = 0.5;
@@ -26,25 +26,25 @@ patch_subsample = 25;
 shapeprops_microdim = [30 20];
 
 global_color_num_colors = 3;
-global_color_num_colorspace = 'rgb';
+global_color_num_colorspace = 'cielab';
 
 color_text_num_colors = 3;
 color_text_num_patches = 2;
-color_text_num_colorspace = 'rgb';
+color_text_num_colorspace = 'cielab';
 color_text_num_version = 'simple'; %simple o randomsample
 color_text_grid_rows = 3;
 color_text_grid_cols = 3;
 
 featlist = {{'shapeprops', shapeprops_microdim}...
-    ,{'global_color', global_color_num_colors, global_color_num_colorspace}...
-    ,{'color_text', color_text_num_patches, color_text_num_colors, color_text_num_colorspace,color_text_num_version,[color_text_grid_rows,color_text_grid_cols]}};
+     ,{'global_color', global_color_num_colors, global_color_num_colorspace}...
+     ,{'color_text', color_text_num_patches, color_text_num_colors, color_text_num_colorspace,color_text_num_version,[color_text_grid_rows,color_text_grid_cols]}};
 
 %macrocategorie
 macro_categories_list = {'Borse';'Top';'Cappelli';'Cinture';'Foulard & Sciarpe';'Gonne';'Intimo';'Pantaloni';'Vestiti'};
 inside_macro = {{},{'Camicie','Cappotti','Giacche','Maglieria & Felpe','T-shirt & Top'},{},{},{},{},{},{'Jeans','Pantaloni'},{}};
 
 % classificatore
-nearneighnum = 1;
+nearneighnum = 3;
 
 %% leggo dati di training
 
@@ -137,6 +137,9 @@ for i=1:size(train_dataset_info,1)
     associations(catind,trainset_info{i}.cluster) = associations(catind,trainset_info{i}.cluster) + 1;
     trainset_info{i}.category_num = uint8(round(catind-1));
 end
+
+associations = associations ./ repmat(sum(associations,2),1,size(associations,2));
+
 figure; imagesc(associations); colorbar;
 set(gca, 'YTick',1:1:kappa);
 set(gca,'YTickLabelMode','manual');
@@ -200,10 +203,8 @@ for i=1:size(test_feat_vectors,1)
         fprintf('Immagine numero %i\n',i);
     end
     %c'è il mod in caso decido di fare feature augmentation
-    testset_info{i}.nearest_train_index = mod(knnsearch(train_feat_vectors,test_feat_vectors(i,:),'K',nearneighnum),size(train_dataset_info,1));
-    if testset_info{i}.nearest_train_index == 0
-          testset_info{i}.nearest_train_index = size(train_dataset_info,1);
-    end
+    testset_info{i}.nearest_train_index = mod(knnsearch(train_feat_vectors,test_feat_vectors(i,:),'K',nearneighnum,'Distance','cosine'),size(train_dataset_info,1));
+    testset_info{i}.nearest_train_index(testset_info{i}.nearest_train_index == 0) = size(train_dataset_info,1);
 end
 
 fprintf('Fine classificazione.\n')
@@ -213,6 +214,8 @@ fprintf('Fine classificazione.\n')
 fprintf('Inizio calcolo matrice di confusione.\n')
 
 confusion = zeros(kappa,kappa);
+
+figure;
 
 for i=1:size(test_dataset_info,1)
     %confronto le categorie fra questo e il punto più vicino
@@ -225,7 +228,21 @@ for i=1:size(test_dataset_info,1)
     end
     traincatind = mode(nearcats);
     confusion(testcatind,traincatind) = confusion(testcatind,traincatind) + 1;
+%     if testcatind ~= traincatind
+%         
+%         cd datasets
+%         cd(test_dataset_name)
+%         imagesc(imread(testset_info{i}.filename));
+%         title(strcat(testset_info{i}.filename,': è ',categories_list{testcatind},' lo vedo come ',categories_list{traincatind}));
+%         cd ..
+%         cd ..
+%         waitforbuttonpress
+%     end
 end
+
+accuracy = sum(diag(confusion)) / sum(sum(confusion));
+
+confusion = confusion ./ repmat(sum(confusion,2),1,size(confusion,2));
 
 fprintf('Inizio calcolo matrice di confusione.\n')
 
@@ -236,8 +253,6 @@ set(gca, 'YTickLabel',categories_list);
 set(gca, 'XTick',1:1:kappa);
 set(gca,'XTickLabelMode','manual');
 set(gca, 'XTickLabel',categories_list);
-
-accuracy = sum(diag(confusion)) / sum(sum(confusion));
 
 fprintf('Accuracy: %f .\n',accuracy);
 

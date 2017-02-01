@@ -44,9 +44,7 @@ for i=1:totpatches
         topcolors = topcolors(:)';
     elseif strcmp(colormode,'cielab')
         topcolors = name4602rgb_fn(topcolors);
-        if strcmp(colorspace,'cielab')
-            topcolors = rgb2lab(topcolors);
-        end
+        topcolors = rgb2lab(topcolors);
         topcolors = topcolors(:)';
     end
     
